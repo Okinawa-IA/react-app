@@ -4,7 +4,7 @@ import { HomePage } from '@/routes/home-page';
 import { WatchListPage } from '@/routes/watch-page';
 
 export function App() {
-  return
+  return (
   <BrowserRouter>
     <AppLayout>
         <Routes>
@@ -13,4 +13,5 @@ export function App() {
         </Routes>
     </AppLayout>
   </BrowserRouter>
+  );
 }
