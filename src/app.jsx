@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { AppLayout } from './app-layout';
-import { HomePage } from './routes/home-page';
-import { WatchListPage } from './routes/watch-page';
+import { HomePage } from '@/routes/home-page';
+import { WatchListPage } from '@/routes/watch-page';
 
 export function App() {
   return
@@ -13,5 +13,4 @@ export function App() {
         </Routes>
     </AppLayout>
   </BrowserRouter>
-  
 }
