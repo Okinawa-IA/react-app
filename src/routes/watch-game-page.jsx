@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function WatchGamePage() {
   const { id } = useParams();
@@ -37,11 +37,27 @@ export function WatchGamePage() {
     }
    };
 
+    useEffect(() => {
+        if (!id) return;
+        fetchGame();
+   }, [id]);
+
+   
+   
+
   return (
     <div>
       <h1>Assistindo Jogo #{id}</h1>
       <Link to="/watch">&lt; Voltar</Link>
-      <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iusto consequuntur magnam ipsa sed minima? Velit libero, nulla expedita deserunt enim error at beatae officiis, dolorum saepe similique ad asperiores ratione?</p>
+      <p>
+            {error && <span>'Ocorreu um erro ao buscar o estado do jogo.'</span>}
+            {loading && <span>'Carregando estado do jogo...'</span>}
+            {data && 
+                <span>
+                    <pre>Estado do jogo: {JSON.stringify(data, null, 2)}</pre>
+                </span>
+            }
+        </p>
     </div>
   );
 }
