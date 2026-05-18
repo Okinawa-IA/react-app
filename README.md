@@ -17,6 +17,15 @@ A aplicação tem como objetivo servir como interface para visualizar os jogos d
 
 ---
 
+## Link para API
+
+```bash
+https://pi5-api-production.up.railway.app/docs#/
+
+```
+
+---
+
 ## Comandos importantes usados no projeto
 
 Durante a criação da aplicação frontend com React e Vite, alguns comandos foram utilizados para configurar, instalar dependências, executar e versionar o projeto.
