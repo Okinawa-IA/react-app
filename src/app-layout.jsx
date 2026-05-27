@@ -2,26 +2,23 @@ import { Link } from 'react-router';
 
 export function AppLayout({ children = null }) {
   return (
-    <div>
-      <header>
-        <h1>PI5 Front End</h1>
+    <div className="app">
+      <header className="app-header">
+        <div>
+          <h1>PI5 Frontend</h1>
+          <p>Jogadores, partidas e acompanhamento em tempo real</p>
+        </div>
       </header>
 
-      <nav style={{ display: 'flex', gap: '1rem', flexDirection: 'row' }}>
+      <nav className="app-nav">
         <Link to="/">Home</Link>
         <Link to="/players">Players</Link>
         <Link to="/watch">Watch</Link>
       </nav>
 
-      <hr />
-
-      <main>{children}</main>
-
-      <hr />
-
-      <footer>
-        <p>&copy; 2026 PI5</p>
-      </footer>
+      <main className="app-main">
+        {children}
+      </main>
     </div>
   );
 }
