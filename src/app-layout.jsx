@@ -19,10 +19,6 @@ export function AppLayout({ children = null }) {
       <main className="app-main">
         {children}
       </main>
-
-      <footer className="app-footer">
-        <p>&copy; 2026 PI5 - Okinawa IA</p>
-      </footer>
     </div>
   );
 }
