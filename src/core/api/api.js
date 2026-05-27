@@ -96,10 +96,11 @@ export function startGame(gameId, token) {
   });
 }
 
-export function registerSpectator(gameId, token) {
+export function registerSpectator(gameId, data, token) {
   return request(`/api/v1/games/${gameId}/spectators`, {
     method: 'POST',
     token,
+    body: JSON.stringify(data),
   });
 }
 
