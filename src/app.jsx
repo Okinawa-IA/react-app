@@ -4,6 +4,7 @@ import { GameProvider } from '@core/context/GameContext';
 import { HomePage } from '@routes/home-page';
 import { WatchListPage } from '@routes/watch-page';
 import { WatchGamePage } from '@routes/watch-game-page';
+import { PlayersPage } from '@routes/players-page';
 
 export function App() {
   return (
@@ -12,6 +13,7 @@ export function App() {
         <AppLayout>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/players" element={<PlayersPage />} />
             <Route path="/watch" element={<WatchListPage />} />
             <Route path="/watch/:gameId" element={<WatchGamePage />} />
           </Routes>

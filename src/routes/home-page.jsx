@@ -27,18 +27,10 @@ export function HomePage() {
     <div>
       <h1>Home</h1>
 
-      <p>Front-end PI5</p>
-
-      {player ? (
-        <div>
-          <p>Jogador cadastrado.</p>
-          <pre>{JSON.stringify(player, null, 2)}</pre>
-        </div>
-      ) : (
-        <button onClick={handleCreatePlayer}>
-          Criar jogador
-        </button>
-      )}
+      <p>
+        Front-end do projeto PI5 para cadastro de jogadores, consulta de partidas
+        e acompanhamento em tempo real via WebSocket.
+      </p>
     </div>
   );
-}
+} 
