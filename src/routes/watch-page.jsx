@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { listGames } from '@core/api/api';
+import { useGameContext } from '@core/context/GameContext';
 
 export function WatchListPage() {
+  const { getPlayerToken } = useGameContext();
+
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,14 +15,20 @@ export function WatchListPage() {
     setError(null);
 
     try {
-      const data = await listGames();
+      const token = getPlayerToken();
+
+      if (!token) {
+        throw new Error('Token do jogador não encontrado');
+      }
+
+      const data = await listGames(token);
 
       console.log('Partidas retornadas pela API:', data);
 
       setGames(Array.isArray(data) ? data : data.games || []);
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar partidas');
+      setError('Erro ao carregar partidas. Crie um jogador primeiro.');
     } finally {
       setLoading(false);
     }

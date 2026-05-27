@@ -30,7 +30,7 @@ export function GameProvider({ children }) {
   }
 
   function getPlayerToken() {
-    return player?.token;
+   return player?.player_access_token;
   }
 
   function getSpectatorToken(gameId) {

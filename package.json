@@ -1,8 +1,8 @@
 {
   "name": "entrega-01",
   "version": "1.0.0",
-  "description": "Este repositório contém a aplicação frontend desenvolvida para o Projeto Integrador 5, utilizando **React** com **Vite**.",
-  "main": "index.js",
+  "description": "Este repositório contém a aplicação frontend desenvolvida para o Projeto Integrador 5, utilizando React com Vite.",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,21 +15,27 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Okinawa-IA/Entrega-01/issues"
   },
   "homepage": "https://github.com/Okinawa-IA/Entrega-01#readme",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hook-form": "^7.75.0",
+    "react-router": "^7.14.0",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.0",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "vite": "^8.0.14"
-  },
-  "dependencies": {
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router": "^7.14.0"
   }
 }
