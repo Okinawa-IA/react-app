@@ -1,7 +1,7 @@
 {
   "name": "entrega-01",
   "version": "1.0.0",
-  "description": "",
+  "description": "Este repositório contém a aplicação frontend desenvolvida para o Projeto Integrador 5, utilizando **React** com **Vite**.",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
@@ -21,11 +21,11 @@
   },
   "homepage": "https://github.com/Okinawa-IA/Entrega-01#readme",
   "devDependencies": {
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.9.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.0.3"
+    "vite": "^8.0.14"
   },
   "dependencies": {
     "react": "^19.2.4",
