@@ -25,10 +25,14 @@ export function WatchListPage() {
 
       console.log('Partidas retornadas pela API:', data);
 
-      setGames(Array.isArray(data) ? data : data.games || []);
+      const gamesList = Array.isArray(data)
+        ? data
+        : data.items || [];
+
+      setGames(gamesList);
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar partidas. Crie um jogador primeiro.');
+      setError('Erro ao carregar partidas');
     } finally {
       setLoading(false);
     }
@@ -54,19 +58,17 @@ export function WatchListPage() {
         <p>Nenhuma partida encontrada.</p>
       )}
 
-      <ul>
-        {games.map((game) => {
-          const gameId = game.id || game.game_id || game.gameId;
-
-          return (
-            <li key={gameId}>
-              <Link to={`/watch/${gameId}`}>
-                Assistir partida {gameId}
+      {games.length > 0 && (
+        <ul>
+          {games.map((game) => (
+            <li key={game.id}>
+              <Link to={`/watch/${game.id}`}>
+                Assistir partida {game.id} - {game.status}
               </Link>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
