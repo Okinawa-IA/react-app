@@ -68,7 +68,6 @@ export function WatchListPage() {
     <div className="watch-page">
       <section className="watch-header">
         <div>
-          <span className="hero-badge">Partidas</span>
 
           <h1>Assistir partidas</h1>
 
