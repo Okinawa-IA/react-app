@@ -8,8 +8,7 @@ export function HomePage() {
     <div className="home-page">
       <section className="hero-card">
         <div>
-          <span className="hero-badge">Projeto Integrador 5</span>
-
+          
           <p>
             Acompanhe partidas entre jogadores inteligentes em um tabuleiro
             dinâmico. Cada jogador toma decisões automáticas para explorar o
