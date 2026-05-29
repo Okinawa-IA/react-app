@@ -4,29 +4,21 @@ export function GameBoard({ board }) {
   }
 
   return (
-    <div>
+    <div className="board-wrapper">
       <h2>Tabuleiro</h2>
 
       <div
+        className="game-board"
         style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${board[0].length}, 40px)`,
-          gap: '4px',
+          gridTemplateColumns: `repeat(${board[0].length}, 72px)`,
         }}
       >
         {board.flatMap((row, rowIndex) =>
           row.map((cell, columnIndex) => (
             <div
               key={`${rowIndex}-${columnIndex}`}
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '1px solid #333',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-              }}
+              className="game-cell"
+              title={`Linha ${rowIndex + 1}, Coluna ${columnIndex + 1}`}
             >
               {cell.professor ? 'P' : cell.level}
             </div>

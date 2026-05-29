@@ -7,8 +7,8 @@ export function GameStatus({ status }) {
   };
 
   return (
-    <p>
-      <strong>Status:</strong> {statusLabel[status] || status}
-    </p>
+    <span className="status-pill neutral">
+      {statusLabel[status] || status || 'Status não informado'}
+    </span>
   );
 }
