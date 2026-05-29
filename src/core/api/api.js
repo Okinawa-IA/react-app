@@ -44,8 +44,8 @@ export function createPlayer(data) {
   });
 }
 
-export function listPlayers(token) {
-  return request('/api/v1/players', {
+export function listPlayers(token, page = 1, pageSize = 20) {
+  return request(`/api/v1/players?page=${page}&page_size=${pageSize}`, {
     method: 'GET',
     token,
   });
