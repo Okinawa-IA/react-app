@@ -67,6 +67,22 @@ export function createGame(data, token) {
   });
 }
 
+export function joinGame(gameId, data, token) {
+  return request(`/api/v1/games/${gameId}/join`, {
+    method: 'POST',
+    token,
+    body: JSON.stringify(data),
+  });
+}
+
+export function startGame(gameId, data, token) {
+  return request(`/api/v1/games/${gameId}/start`, {
+    method: 'POST',
+    token,
+    body: JSON.stringify(data),
+  });
+}
+
 export function listGames(token) {
   return request('/api/v1/games', {
     method: 'GET',
@@ -81,20 +97,6 @@ export function getGameById(gameId, token) {
   });
 }
 
-export function joinGame(gameId, data, token) {
-  return request(`/api/v1/games/${gameId}/join`, {
-    method: 'POST',
-    token,
-    body: JSON.stringify(data),
-  });
-}
-
-export function startGame(gameId, token) {
-  return request(`/api/v1/games/${gameId}/start`, {
-    method: 'POST',
-    token,
-  });
-}
 
 export function registerSpectator(gameId, data, token) {
   return request(`/api/v1/games/${gameId}/spectators`, {

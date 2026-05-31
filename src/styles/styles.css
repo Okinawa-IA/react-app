@@ -894,3 +894,51 @@ summary {
     grid-template-columns: 1fr;
   }
 }
+
+.play-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.play-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(216, 165, 50, 0.16), transparent 30%),
+    linear-gradient(135deg, #fff9ef, #fff0da);
+  border-top: 8px solid var(--torii-red);
+}
+
+.play-header h1 {
+  margin: 12px 0 8px;
+  font-size: 36px;
+  color: var(--indigo);
+}
+
+.play-header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.player-play-card div,
+.selected-game-card {
+  display: grid;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.play-card-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.play-card-actions button,
+.play-card-actions .button-link {
+  flex: 1;
+}
