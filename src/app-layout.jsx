@@ -20,6 +20,7 @@ export function AppLayout({ children = null }) {
       <nav className="app-nav">
         <Link to="/">Home</Link>
         <Link to="/players">Jogadores</Link>
+         <Link to="/play">Jogar</Link>
         <Link to="/watch">Assistir</Link>
       </nav>
 

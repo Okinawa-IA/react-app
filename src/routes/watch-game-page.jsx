@@ -6,6 +6,10 @@ import { useGameSocket } from '@core/hooks/useGameSocket';
 import { GameStatus } from '@feature/game/components/GameStatus';
 import { GameBoard } from '@feature/game/components/GameBoard';
 
+function canUseWebSocket(game) {
+  return game?.status === 'PLAYING' || game?.status === 'IN_PROGRESS';
+}
+
 export function WatchGamePage() {
   const { gameId } = useParams();
 
@@ -22,11 +26,13 @@ export function WatchGamePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const shouldOpenSocket = canUseWebSocket(game) && Boolean(spectatorToken);
+
   const {
     connected,
     gameState,
     socketError,
-  } = useGameSocket(gameId, spectatorToken);
+  } = useGameSocket(gameId, shouldOpenSocket ? spectatorToken : null);
 
   async function loadGameAndRegisterSpectator() {
     setLoading(true);
@@ -98,6 +104,9 @@ export function WatchGamePage() {
   }, [gameId]);
 
   const currentGame = gameState || game;
+  const gameFinished = currentGame?.status === 'FINISHED';
+  const gameIsRunning =
+    currentGame?.status === 'PLAYING' || currentGame?.status === 'IN_PROGRESS';
 
   return (
     <div className="watch-game-page">
@@ -131,9 +140,16 @@ export function WatchGamePage() {
         </section>
       )}
 
-      {socketError && (
+      {socketError && shouldOpenSocket && (
         <section className="error-card">
           <strong>WebSocket:</strong> {socketError}
+        </section>
+      )}
+
+      {gameFinished && (
+        <section className="error-card">
+          <strong>Partida finalizada:</strong> o WebSocket não será aberto
+          porque essa partida já terminou.
         </section>
       )}
 
@@ -148,7 +164,11 @@ export function WatchGamePage() {
                 : 'connection-status disconnected'
             }
           >
-            {connected ? 'Conectado em tempo real' : 'Desconectado'}
+            {connected
+              ? 'Conectado em tempo real'
+              : gameIsRunning
+                ? 'Desconectado'
+                : 'WebSocket inativo'}
           </span>
         </div>
 
