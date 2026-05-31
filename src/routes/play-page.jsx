@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import {
   createGame,
   joinGame,
@@ -12,6 +12,7 @@ function getStatusLabel(status) {
   const labels = {
     WAITING_PLAYERS: 'Aguardando jogadores',
     IN_PROGRESS: 'Em andamento',
+    PLAYING: 'Em andamento',
     FINISHED: 'Finalizada',
     PAUSED: 'Pausada',
   };
@@ -19,7 +20,12 @@ function getStatusLabel(status) {
   return labels[status] || status;
 }
 
+function canStartGame(game) {
+  return game?.status === 'WAITING_PLAYERS' || game?.status === 'PAUSED';
+}
+
 export function PlayPage() {
+  const navigate = useNavigate();
   const { player, getPlayerToken } = useGameContext();
 
   const [games, setGames] = useState([]);
@@ -67,19 +73,19 @@ export function PlayPage() {
     try {
       const token = getPlayerToken();
 
-      if (!token) {
+      if (!token || !player?.id) {
         throw new Error('Cadastre um jogador antes de criar partida.');
       }
 
-     const data = await createGame(
+      const data = await createGame(
         {
-            auto_start: false,
-            player_id: player.id,
-            team_slot: 1,
-            vs_random_bot: true,
+          auto_start: false,
+          player_id: player.id,
+          team_slot: 1,
+          vs_random_bot: true,
         },
         token
-        );
+      );
 
       console.log('Partida criada:', data);
 
@@ -88,7 +94,7 @@ export function PlayPage() {
       await loadGames();
     } catch (err) {
       console.error(err);
-      setError('Erro ao criar partida. Talvez o body do endpoint precise ser ajustado.');
+      setError('Erro ao criar partida.');
     } finally {
       setCreatingGame(false);
     }
@@ -101,19 +107,19 @@ export function PlayPage() {
     try {
       const token = getPlayerToken();
 
-      if (!token) {
+      if (!token || !player?.id) {
         throw new Error('Cadastre um jogador antes de entrar em partida.');
       }
 
       const data = await joinGame(
         gameId,
         {
-            player_id: player.id,
-            team_slot: 2,
+          player_id: player.id,
+          team_slot: 2,
         },
         token
-        );
-      
+      );
+
       console.log('Entrada na partida:', data);
 
       setSelectedGame(data);
@@ -121,7 +127,7 @@ export function PlayPage() {
       await loadGames();
     } catch (err) {
       console.error(err);
-      setError('Erro ao entrar na partida. Talvez o body do endpoint precise ser ajustado.');
+      setError('Erro ao entrar na partida.');
     } finally {
       setJoiningGame(false);
     }
@@ -141,16 +147,16 @@ export function PlayPage() {
       const data = await startGame(
         gameId,
         {
-            reason: 'Iniciado pelo front-end',
+          reason: 'Iniciado pelo front-end',
         },
         token
-        );
+      );
 
       console.log('Partida iniciada:', data);
 
       setSelectedGame(data);
 
-      await loadGames();
+      navigate(`/watch/${data.id || gameId}`);
     } catch (err) {
       console.error(err);
       setError('Erro ao iniciar partida.');
@@ -181,7 +187,7 @@ export function PlayPage() {
           </p>
         </div>
 
-        <button onClick={loadGames} disabled={loadingGames}>
+        <button onClick={loadGames} disabled={loadingGames || !player}>
           {loadingGames ? 'Atualizando...' : 'Atualizar partidas'}
         </button>
       </section>
@@ -228,7 +234,7 @@ export function PlayPage() {
             <h2>Criar nova partida</h2>
 
             <p>
-              Crie uma partida usando seu jogador atual.
+              Crie uma partida contra bot aleatório usando seu jogador atual.
             </p>
           </div>
 
@@ -254,12 +260,22 @@ export function PlayPage() {
             <div className="hero-actions">
               <button
                 onClick={() => handleStartGame(selectedGame.id)}
-                disabled={startingGame}
+                disabled={startingGame || !canStartGame(selectedGame)}
               >
-                {startingGame ? 'Iniciando...' : 'Iniciar partida'}
+                {selectedGame.status === 'PLAYING' ||
+                selectedGame.status === 'IN_PROGRESS'
+                  ? 'Partida em andamento'
+                  : selectedGame.status === 'FINISHED'
+                    ? 'Partida finalizada'
+                    : startingGame
+                      ? 'Iniciando...'
+                      : 'Iniciar partida'}
               </button>
 
-              <Link className="button-link secondary" to={`/watch/${selectedGame.id}`}>
+              <Link
+                className="button-link secondary"
+                to={`/watch/${selectedGame.id}`}
+              >
                 Assistir partida
               </Link>
             </div>

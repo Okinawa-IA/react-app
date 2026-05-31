@@ -10,6 +10,7 @@ function getAuthHeaders(token) {
   };
 }
 
+
 async function request(path, options = {}) {
   const { token, ...fetchOptions } = options;
 
