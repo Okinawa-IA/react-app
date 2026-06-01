@@ -807,6 +807,7 @@ summary {
   position: relative;
   z-index: 1;
   margin-top: 12px;
+  width: 100%;
 }
 
 .board-title-row {
@@ -837,28 +838,36 @@ summary {
 }
 
 .board-scroll {
+  width: 100%;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 24px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(216, 165, 50, 0.12), transparent 24%),
+    linear-gradient(135deg, #fff8ec, #fff0da);
+  border: 2px solid var(--border);
 }
 
 .game-board {
   display: grid;
-  gap: 12px;
-  width: fit-content;
-  min-width: fit-content;
-  padding: 24px;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px;
   background:
     radial-gradient(circle at top left, rgba(216, 165, 50, 0.12), transparent 28%),
     linear-gradient(135deg, #2f2019, #573121);
   border: 6px solid var(--torii-red-dark);
   border-radius: 28px;
   box-shadow: 0 24px 52px rgba(68, 36, 20, 0.26);
+  justify-content: center;
 }
 
 .game-cell {
-  width: 88px;
-  height: 88px;
-  border-radius: 18px;
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
   background: linear-gradient(135deg, #fffaf2, #f4e2c4);
   border: 2px solid #d8b88e;
   display: flex;
@@ -887,20 +896,20 @@ summary {
 }
 
 .cell-level {
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .cell-character {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  max-width: 78px;
+  gap: 5px;
+  max-width: 84px;
   text-align: center;
 }
 
 .cell-character span {
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1;
 }
 
@@ -908,7 +917,7 @@ summary {
   font-size: 10px;
   font-weight: 900;
   line-height: 1.15;
-  max-width: 74px;
+  max-width: 80px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -926,7 +935,6 @@ summary {
 .cell-character.lovelace {
   color: #9d174d;
 }
-
 /* Responsivo */
 
 @media (max-width: 850px) {
