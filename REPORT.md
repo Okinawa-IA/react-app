@@ -1,241 +1,178 @@
-# Projeto Integrador 5 - Frontend
+# Relatório Técnico — Front-end Okinawa IA
 
-Este repositório contém a aplicação frontend desenvolvida para o Projeto Integrador 5, utilizando **React** com **Vite**.
+## 1. Tecnologias utilizadas
 
-A aplicação tem como objetivo servir como interface para visualizar os jogos dos jogadores inteligentes desenvolvidos no projeto.
+O front-end foi desenvolvido com **React** e **Vite**.
 
----
+A escolha do React foi feita porque ele facilita a criação de interfaces componentizadas, permitindo separar a aplicação em páginas, componentes reutilizáveis e hooks. Isso ajuda a manter o projeto mais organizado conforme novas funcionalidades são adicionadas, como cadastro de jogadores, listagem de partidas, modo jogador e modo espectador.
 
-## Tecnologias utilizadas
+O Vite foi utilizado por ser uma ferramenta moderna de criação e execução de projetos front-end. Ele permite iniciar o ambiente de desenvolvimento rapidamente, possui recarregamento automático durante o desenvolvimento e gera uma versão otimizada da aplicação no processo de build.
 
-- React
-- Vite
-- JavaScript
-- React Router
-- npm
-- Git
+## 2. Organização de rotas
 
----
+A aplicação foi separada em rotas principais para organizar melhor cada responsabilidade do sistema:
 
-## Link para API
+- `/players`: tela responsável pelo cadastro e listagem de jogadores.
+- `/play`: tela voltada para o modo jogador, permitindo criar partidas, entrar em partidas abertas e iniciar partidas.
+- `/watch`: tela responsável por listar partidas disponíveis para acompanhamento.
+- `/watch/:gameId`: tela de espectador, onde é possível visualizar uma partida específica, acompanhar o tabuleiro e receber atualizações via WebSocket.
 
-```bash
-https://pi5-api-production.up.railway.app/docs#/
+Essa separação evita que toda a lógica fique concentrada em uma única página e torna o fluxo da aplicação mais claro. Cada rota representa uma funcionalidade principal do projeto.
 
+## 3. Uso do GameContext
+
+Foi criado um contexto global chamado `GameContext` para compartilhar informações importantes entre diferentes telas da aplicação.
+
+O contexto armazena principalmente:
+
+- o jogador cadastrado;
+- o token de acesso do jogador;
+- os tokens de espectador associados a cada partida.
+
+O uso do `GameContext` evita a necessidade de passar essas informações manualmente por várias páginas e componentes. Assim, qualquer tela que precise acessar o jogador atual ou os tokens pode fazer isso diretamente pelo contexto.
+
+## 4. Uso do localStorage
+
+A aplicação salva dados no `localStorage` para manter o usuário autenticado mesmo após atualizar a página.
+
+Atualmente, o front-end salva o objeto inteiro do jogador na chave `player`. Dentro desse objeto existe o campo:
+
+```txt
+player_access_token
+````
+
+Esse token é utilizado nas requisições protegidas da API, como listagem de partidas, criação de partidas, entrada em partidas e busca de dados de uma partida.
+
+Também são salvos tokens de espectador por partida na chave:
+
+```txt
+spectatorTokens
 ```
 
----
+A estrutura funciona como um objeto em que cada `gameId` possui seu respectivo `spectator_access_token`.
 
-## Comandos importantes usados no projeto
+Exemplo conceitual:
 
-Durante a criação da aplicação frontend com React e Vite, alguns comandos foram utilizados para configurar, instalar dependências, executar e versionar o projeto.
-
----
-
-## Inicializar o repositório Git
-
-```bash
-git init
-
+```json
+{
+  "id-da-partida": "token-do-espectador"
+}
 ```
 
-Cria um repositório Git local dentro da pasta do projeto.
+Essa estratégia permite que, ao recarregar a tela de uma partida, o front-end reutilize o token de espectador já registrado, evitando criar um novo espectador desnecessariamente.
 
-Esse comando permite versionar o código, fazer commits e depois enviar o projeto para o GitHub.
+## 5. Listagem de partidas
 
-----------
+A listagem de partidas é feita por meio da rota `/watch`.
 
-## Inicializar o projeto Node/npm
+Essa tela chama a API de partidas usando o token do jogador salvo no `localStorage`. A resposta da API retorna uma lista de partidas com informações como:
 
-```bash
-npm init -y
+* ID da partida;
+* status da partida;
+* jogador Turing;
+* jogador Lovelace;
+* quantidade de espectadores.
 
+Cada partida é exibida em formato de card, com um botão para assistir. Ao clicar em uma partida, o usuário é direcionado para:
+
+```txt
+/watch/:gameId
 ```
 
-Cria o arquivo `package.json`, que guarda as informações principais do projeto, como nome, versão, scripts e dependências.
+Essa rota usa o `gameId` presente na URL para buscar os dados completos da partida.
 
-O parâmetro `-y` responde automaticamente às perguntas iniciais do npm, criando uma configuração padrão.
+## 6. Tela de espectador
 
-----------
+A tela de espectador fica na rota:
 
-## Instalar o Vite
-
-```bash
-npm install --save-dev vite
-
+```txt
+/watch/:gameId
 ```
 
-Instala o Vite como dependência de desenvolvimento.
+Ela tem como responsabilidade carregar uma partida específica e permitir que o usuário acompanhe o jogo.
 
-O Vite é a ferramenta usada para rodar o servidor local, fazer o build da aplicação e facilitar o desenvolvimento frontend.
+O fluxo da tela é:
 
-----------
+1. Capturar o `gameId` da URL.
+2. Buscar o token do jogador salvo no contexto/localStorage.
+3. Buscar os dados da partida na API.
+4. Verificar se já existe token de espectador para aquela partida.
+5. Caso não exista, registrar um novo espectador.
+6. Salvar o `spectator_access_token`.
+7. Abrir conexão WebSocket se a partida estiver em andamento.
+8. Renderizar o tabuleiro atualizado.
 
-## Instalar tipos do Node
+O registro de espectador é necessário porque a API retorna um token específico para acompanhamento daquela partida.
 
-```bash
-npm install --save-dev @types/node
+## 7. WebSocket
 
+A aplicação utiliza WebSocket para acompanhar atualizações em tempo real da partida.
+
+O WebSocket é aberto usando o `gameId` da partida e o `spectator_access_token` recebido no registro do espectador.
+
+A URL utilizada segue o formato:
+
+```txt
+wss://pi5-api-production.up.railway.app/api/v1/ws/games/{gameId}?token={spectator_access_token}
 ```
 
-Instala definições de tipos do Node.js.
+A lógica de conexão foi isolada em um hook chamado `useGameSocket`, responsável por:
 
-Mesmo usando JavaScript, esse pacote ajuda o editor, como o VS Code, a entender melhor recursos do Node e oferecer autocomplete.
+* abrir a conexão;
+* identificar quando o WebSocket está conectado;
+* receber mensagens da API;
+* atualizar o estado atual da partida;
+* tratar erros de conexão;
+* fechar a conexão ao sair da página.
 
-----------
+Com isso, a tela de espectador não precisa controlar diretamente toda a lógica do WebSocket, deixando o código mais organizado.
 
-## Instalar React, React DOM e React Router
+## 8. Tratamento de partidas finalizadas
 
-```bash
-npm install react react-dom react-router
+O front-end trata partidas finalizadas para evitar erros desnecessários de WebSocket.
 
+Quando uma partida está com status `FINISHED`, a aplicação não tenta abrir uma conexão WebSocket, pois a partida já terminou e não há mais atualizações em tempo real a serem recebidas.
+
+Nesse caso, a tela mostra os dados finais da partida e exibe uma mensagem informando que o WebSocket não será aberto porque a partida já foi finalizada.
+
+Esse tratamento evita tentativas de conexão inválidas e melhora a experiência do usuário.
+
+## 9. Modo jogador
+
+Além do modo espectador, foi criada a rota:
+
+```txt
+/play
 ```
 
-Instala as principais dependências da aplicação React.
+Essa tela permite que o jogador cadastrado:
 
--   `react`: biblioteca principal para criar componentes e interfaces.
-    
--   `react-dom`: permite renderizar os componentes React no navegador.
-    
--   `react-router`: permite criar rotas e navegação entre páginas dentro da aplicação.
-    
+* crie uma nova partida;
+* entre em partidas abertas;
+* inicie uma partida;
+* seja direcionado para a tela de acompanhamento da partida.
 
-----------
+A movimentação real do jogador depende do backend do bot, cadastrado no campo:
 
-## Instalar tipos do React
-
-```bash
-npm install --save-dev @types/react @types/react-dom
-
+```txt
+ai_player_move_endpoint
 ```
 
-Instala definições de tipos para React e React DOM.
+No front-end, o papel da tela `/play` é interagir com a API principal para criar e iniciar partidas. A lógica de decisão do jogador será executada no backend do bot.
 
-Esses pacotes ajudam o editor a reconhecer melhor os componentes, propriedades e funções do React.
+## 10. Conclusão
 
-----------
+O front-end foi estruturado para separar bem as responsabilidades da aplicação.
 
-## Instalar o plugin React para o Vite
+A aplicação possui:
 
-```bash
-npm install -D @vitejs/plugin-react
+* cadastro e listagem de jogadores;
+* persistência do jogador e token no `localStorage`;
+* criação e início de partidas;
+* listagem de partidas;
+* registro de espectadores;
+* acompanhamento de partidas via WebSocket;
+* tratamento de partidas finalizadas;
+* renderização visual do tabuleiro.
 
-```
-
-Instala o plugin que permite ao Vite trabalhar corretamente com React e JSX.
-
-O `-D` é um atalho para `--save-dev`, ou seja, instala como dependência de desenvolvimento.
-
-----------
-
-## Rodar o projeto em modo desenvolvimento
-
-```bash
-npm run dev
-
-```
-
-Inicia o servidor local de desenvolvimento do Vite.
-
-Esse comando permite abrir a aplicação no navegador e ver as alterações quase automaticamente sempre que um arquivo é salvo.
-
-----------
-
-## Gerar a versão de produção
-
-```bash
-npm run build
-
-```
-
-Gera a versão final da aplicação para produção.
-
-O Vite cria uma pasta `dist/` com os arquivos otimizados, minificados e prontos para publicação.
-
-----------
-
-## Visualizar a versão de produção localmente
-
-```bash
-npm run preview
-
-```
-
-Executa uma prévia local da versão gerada pelo `npm run build`.
-
-Serve para testar como a aplicação vai se comportar depois de preparada para produção.
-
-----------
-
-# Comandos Git para entrega
-
-## Conectar o repositório local ao GitHub
-
-```bash
-git remote add origin https://github.com/Okinawa-IA/Entrega-01.git
-
-```
-
-Conecta o projeto local a um repositório remoto no GitHub.
-
-----------
-
-## Enviar o projeto para o GitHub
-
-```bash
-git push -u origin main
-
-```
-
-Envia os commits do projeto local para o repositório remoto no GitHub.
-
-O `-u` configura a branch local para acompanhar a branch remota, facilitando os próximos `git push`.
-
-Caso a branch principal do projeto seja `master`, use:
-
-```bash
-git push -u origin master
-
-```
-
-----------
-
-# Arquivo `.gitignore`
-
-No arquivo `.gitignore`, foram adicionados:
-
-```gitignore
-dist/
-node_modules/
-.env
-
-```
-
-Esses arquivos e pastas não devem ser enviados ao GitHub.
-
--   `dist/`: pasta gerada automaticamente no build de produção.
-    
--   `node_modules/`: pasta com as dependências instaladas pelo npm.
-    
--   `.env`: arquivo usado para variáveis de ambiente, podendo conter dados sensíveis.
-    
-
-----------
-
-# Scripts de Execução
-
-## `npm run dev`
-
-Executa o projeto em ambiente de desenvolvimento.
-
-## `npm run build`
-
-Gera os arquivos finais da aplicação para produção.
-
-## `npm run preview`
-
-Permite visualizar localmente a versão de produção gerada pelo build.
-
-----------
-
-
+Essa organização facilita a manutenção do projeto e permite integrar posteriormente o backend do bot responsável pela tomada de decisão do jogador.
