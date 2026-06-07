@@ -1,3 +1,24 @@
+import claroImg from '@/assets/professors/claro.png';
+import reyImg from '@/assets/professors/rey.png';
+import biaImg from '@/assets/professors/bia.png';
+import karinImg from '@/assets/professors/karin.png';
+
+const professorImages = {
+  CLARO: claroImg,
+  REY: reyImg,
+  BEATRIZ: biaImg,
+  BIA: biaImg,
+  KARIN: karinImg,
+};
+
+function normalizeText(value) {
+  return String(value)
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 function getProfessorName(professor) {
   if (!professor) {
     return null;
@@ -11,17 +32,71 @@ function getProfessorName(professor) {
     professor.name ||
     professor.professor_name ||
     professor.nome ||
+    professor.full_name ||
+    professor.display_name ||
     'Professor'
   );
+}
+
+function getProfessorImage(professorName) {
+  const normalizedName = normalizeText(professorName);
+
+  if (normalizedName.includes('CLARO')) {
+    return professorImages.CLARO;
+  }
+
+  if (normalizedName.includes('REY')) {
+    return professorImages.REY;
+  }
+
+  if (normalizedName.includes('BIA') || normalizedName.includes('BEATRIZ')) {
+    return professorImages.BEATRIZ;
+  }
+
+  if (normalizedName.includes('KARIN')) {
+    return professorImages.KARIN;
+  }
+
+  return null;
+}
+
+function getProfessorTeamClass(professorName) {
+  const normalizedName = normalizeText(professorName);
+
+  if (normalizedName.includes('CLARO') || normalizedName.includes('REY')) {
+    return 'professor-team-1';
+  }
+
+  if (
+    normalizedName.includes('BIA') ||
+    normalizedName.includes('BEATRIZ') ||
+    normalizedName.includes('KARIN')
+  ) {
+    return 'professor-team-2';
+  }
+
+  return 'professor-team-default';
 }
 
 function renderCellContent(cell) {
   const professorName = getProfessorName(cell.professor);
 
   if (professorName) {
+    const professorImage = getProfessorImage(professorName);
+    const professorTeamClass = getProfessorTeamClass(professorName);
+
     return (
-      <div className="cell-character professor">
-        <span>👨‍🏫</span>
+      <div className={`cell-character professor ${professorTeamClass}`}>
+        {professorImage ? (
+          <img
+            src={professorImage}
+            alt={professorName}
+            className="professor-image"
+          />
+        ) : (
+          <span className="professor-fallback">先</span>
+        )}
+
         <small>{professorName}</small>
       </div>
     );
@@ -30,7 +105,7 @@ function renderCellContent(cell) {
   if (cell.turing_player || cell.turing) {
     return (
       <div className="cell-character turing">
-        <span>🤖</span>
+        <span className="player-avatar">🤖</span>
         <small>Turing</small>
       </div>
     );
@@ -39,7 +114,7 @@ function renderCellContent(cell) {
   if (cell.lovelace_player || cell.lovelace) {
     return (
       <div className="cell-character lovelace">
-        <span>🧠</span>
+        <span className="player-avatar">🧠</span>
         <small>Lovelace</small>
       </div>
     );
@@ -72,7 +147,7 @@ export function GameBoard({ board }) {
         <div
           className="game-board"
           style={{
-            gridTemplateColumns: `repeat(${boardColumns}, 88px)`,
+            gridTemplateColumns: `repeat(${boardColumns}, 96px)`,
           }}
         >
           {board.flatMap((row, rowIndex) =>
