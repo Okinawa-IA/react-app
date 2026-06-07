@@ -10,6 +10,113 @@ function canUseWebSocket(game) {
   return game?.status === 'PLAYING' || game?.status === 'IN_PROGRESS';
 }
 
+function getWinnerText(game) {
+  if (!game || game.status !== 'FINISHED') {
+    return null;
+  }
+
+  if (game.winner_team === 1) {
+    return 'Time 1 - Turing venceu com CLARO e REY';
+  }
+
+  if (game.winner_team === 2) {
+    return 'Time 2 - Lovelace venceu com KARIN e BEATRIZ';
+  }
+
+  return 'Partida finalizada sem vencedor definido';
+}
+
+function getWinnerClass(game) {
+  if (!game || game.status !== 'FINISHED') {
+    return 'neutral';
+  }
+
+  if (game.winner_team === 1 || game.winner_team === 2) {
+    return 'success';
+  }
+
+  return 'warning';
+}
+
+function getTeamName(teamId) {
+  if (teamId === 1) {
+    return 'Time 1 - Turing';
+  }
+
+  if (teamId === 2) {
+    return 'Time 2 - Lovelace';
+  }
+
+  return 'Time não definido';
+}
+
+function getTeamProfessors(teamId) {
+  if (teamId === 1) {
+    return ['CLARO', 'REY'];
+  }
+
+  if (teamId === 2) {
+    return ['KARIN', 'BEATRIZ'];
+  }
+
+  return [];
+}
+
+function getProfessorByTeam(teamId) {
+  const professors = getTeamProfessors(teamId);
+
+  if (professors.length === 0) {
+    return 'O time';
+  }
+
+  return professors[0];
+}
+
+function getGameActionText(game) {
+  const lastAction = game?.last_action;
+
+  if (!lastAction) {
+    if (game?.status === 'FINISHED') {
+      return 'A partida foi finalizada.';
+    }
+
+    if (game?.status === 'PLAYING' || game?.status === 'IN_PROGRESS') {
+      return 'A partida está em andamento. Aguardando a próxima jogada.';
+    }
+
+    return 'Aguardando movimentações da partida.';
+  }
+
+  const teamName = getTeamName(lastAction.team_id);
+  const professorName = getProfessorByTeam(lastAction.team_id);
+
+  if (lastAction.type === 'forfeit') {
+    if (lastAction.reason === 'invalid_move') {
+      return `${professorName} tentou uma jogada inválida e o ${teamName} perdeu a vez.`;
+    }
+
+    return `${teamName} perdeu a vez.`;
+  }
+
+  if (lastAction.type === 'move') {
+    return `${professorName} se movimentou pelo tabuleiro.`;
+  }
+
+  if (lastAction.type === 'help_student') {
+    return `${professorName} ajudou um aluno a passar de semestre.`;
+  }
+
+  if (lastAction.type === 'level_up') {
+    return `${professorName} evoluiu uma casa do tabuleiro.`;
+  }
+
+  if (lastAction.type === 'attack') {
+    return `${professorName} realizou uma ação contra o time adversário.`;
+  }
+
+  return `${teamName} realizou uma ação: ${lastAction.type}.`;
+}
+
 export function WatchGamePage() {
   const { gameId } = useParams();
 
@@ -108,6 +215,10 @@ export function WatchGamePage() {
   const gameIsRunning =
     currentGame?.status === 'PLAYING' || currentGame?.status === 'IN_PROGRESS';
 
+  const winnerText = getWinnerText(currentGame);
+  const winnerClass = getWinnerClass(currentGame);
+  const gameActionText = getGameActionText(currentGame);
+
   return (
     <div className="watch-game-page">
       <section className="watch-game-header">
@@ -147,9 +258,16 @@ export function WatchGamePage() {
       )}
 
       {gameFinished && (
-        <section className="error-card">
-          <strong>Partida finalizada:</strong> o WebSocket não será aberto
-          porque essa partida já terminou.
+        <section className="finished-card">
+          <div>
+            <span className={`status-pill ${winnerClass}`}>
+              Partida finalizada
+            </span>
+
+            <h2>Resultado da partida</h2>
+
+            <p>{winnerText}</p>
+          </div>
         </section>
       )}
 
@@ -192,6 +310,16 @@ export function WatchGamePage() {
       </section>
 
       {currentGame && (
+        <section className="game-action-card">
+          <span className="status-pill neutral">Acontecimento</span>
+
+          <h2>Status do jogo</h2>
+
+          <p>{gameActionText}</p>
+        </section>
+      )}
+
+      {currentGame && (
         <section className="game-details">
           <div className="game-details-header">
             <div>
@@ -211,6 +339,8 @@ export function WatchGamePage() {
               <p>
                 {currentGame.turing_player?.ai_player_name || 'Não definido'}
               </p>
+
+              <small>Time 1 — CLARO e REY</small>
             </article>
 
             <article>
@@ -218,6 +348,8 @@ export function WatchGamePage() {
               <p>
                 {currentGame.lovelace_player?.ai_player_name || 'Não definido'}
               </p>
+
+              <small>Time 2 — KARIN e BEATRIZ</small>
             </article>
           </div>
 
