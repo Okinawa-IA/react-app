@@ -30,7 +30,12 @@ export function HomePage() {
             <Link className="button-link secondary" to="/players">
               Cadastrar jogador
             </Link>
+
+            <Link className="button-link secondary" to="/play">
+              Jogar partida
+            </Link>
           </div>
+
         </div>
 
         <div className="hero-panel">

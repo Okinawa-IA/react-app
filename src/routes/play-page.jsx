@@ -82,7 +82,7 @@ export function PlayPage() {
           auto_start: false,
           player_id: player.id,
           team_slot: 1,
-          vs_random_bot: true,
+          vs_random_bot: false,
         },
         token
       );
