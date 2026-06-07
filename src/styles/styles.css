@@ -1026,3 +1026,97 @@ summary {
     max-width: 54px;
   }
 }
+
+/* Professores com imagens */
+
+.cell-character.professor {
+  width: 86px;
+  gap: 5px;
+  color: #92400e;
+}
+
+.professor-image {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 16px;
+  background: #fff8ec;
+  border: 3px solid var(--gold);
+  box-shadow:
+    0 8px 16px rgba(68, 36, 20, 0.24),
+    inset 0 -3px 0 rgba(68, 36, 20, 0.12);
+}
+
+.professor-team-1 .professor-image {
+  border-color: #d8a532;
+  box-shadow:
+    0 0 0 3px rgba(216, 165, 50, 0.26),
+    0 8px 16px rgba(68, 36, 20, 0.24);
+}
+
+.professor-team-2 .professor-image {
+  border-color: #8b1111;
+  box-shadow:
+    0 0 0 3px rgba(225, 29, 29, 0.22),
+    0 8px 16px rgba(68, 36, 20, 0.24);
+}
+
+.professor-fallback {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top left, #fff8dc, transparent 38%),
+    linear-gradient(135deg, var(--gold), #92400e);
+  color: #fff8ec;
+  font-size: 24px;
+  font-weight: 900;
+  border: 3px solid var(--gold);
+  box-shadow: 0 8px 16px rgba(68, 36, 20, 0.24);
+}
+
+.cell-character.professor small {
+  max-width: 82px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 248, 236, 0.96);
+  color: #5b240f;
+  border: 1px solid rgba(216, 165, 50, 0.55);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.player-avatar {
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* Ajustes responsivos específicos para as imagens dos professores */
+@media (max-width: 850px) {
+  .cell-character.professor {
+    width: 58px;
+  }
+
+  .professor-image,
+  .professor-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border-width: 2px;
+  }
+
+  .cell-character.professor small {
+    max-width: 54px;
+    font-size: 8px;
+  }
+
+  .player-avatar {
+    font-size: 22px;
+  }
+}
+
