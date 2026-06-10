@@ -4,10 +4,7 @@ import { FIXED_PLAYER } from '@core/config/fixedPlayer';
 const GameContext = createContext(null);
 
 function getFixedPlayer() {
-  return {
-    ...FIXED_PLAYER,
-    player_access_token: import.meta.env.VITE_FIXED_PLAYER_ACCESS_TOKEN,
-  };
+  return FIXED_PLAYER;
 }
 
 export function GameProvider({ children }) {
