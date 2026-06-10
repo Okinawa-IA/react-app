@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
-import { registerSpectator, getGameById } from '@core/api/api';
+import { registerSpectator, getGameById, listGameTurns } from '@core/api/api';
 import { useGameContext } from '@core/context/GameContext';
 import { useGameSocket } from '@core/hooks/useGameSocket';
 import { GameStatus } from '@feature/game/components/GameStatus';
@@ -182,7 +182,90 @@ function getActionTeamId(action) {
   );
 }
 
-function getGameActionText(game) {
+function getTurnNumber(turn) {
+  return (
+    turn?.turn_number ||
+    turn?.turnNumber ||
+    turn?.number ||
+    turn?.turn ||
+    turn?.id ||
+    '?'
+  );
+}
+
+function getTurnTeamId(turn) {
+  return (
+    turn?.team_id ||
+    turn?.teamId ||
+    turn?.current_team ||
+    turn?.currentTeam ||
+    turn?.player_team ||
+    turn?.playerTeam ||
+    turn?.active_team ||
+    turn?.activeTeam ||
+    turn?.team ||
+    null
+  );
+}
+
+function getTurnAction(turn) {
+  return (
+    turn?.action ||
+    turn?.move ||
+    turn?.last_action ||
+    turn?.lastAction ||
+    turn?.event ||
+    null
+  );
+}
+
+function getTurnProfessorName(turn, teamId) {
+  return (
+    turn?.professor_name ||
+    turn?.professorName ||
+    turn?.professor ||
+    turn?.character_name ||
+    turn?.characterName ||
+    getProfessorByTeam(teamId)
+  );
+}
+
+function getTurnText(lastTurn) {
+  if (!lastTurn) {
+    return null;
+  }
+
+  const turnNumber = getTurnNumber(lastTurn);
+  const teamId = getTurnTeamId(lastTurn);
+  const teamName = getTeamName(teamId);
+  const action = getTurnAction(lastTurn);
+  const actionType = getActionType(action || lastTurn);
+  const professorName = getTurnProfessorName(lastTurn, teamId);
+
+  if (actionType === 'forfeit' || actionType === 'FORFEIT') {
+    return `Turno ${turnNumber}: ${teamName} perdeu a vez.`;
+  }
+
+  if (actionType === 'move' || actionType === 'MOVE') {
+    return `Turno ${turnNumber}: ${professorName} se movimentou pelo tabuleiro.`;
+  }
+
+  if (actionType === 'help_student' || actionType === 'HELP_STUDENT') {
+    return `Turno ${turnNumber}: ${professorName} ajudou um aluno a passar de semestre.`;
+  }
+
+  if (actionType === 'level_up' || actionType === 'LEVEL_UP') {
+    return `Turno ${turnNumber}: ${professorName} evoluiu uma casa do tabuleiro.`;
+  }
+
+  if (actionType === 'attack' || actionType === 'ATTACK') {
+    return `Turno ${turnNumber}: ${professorName} realizou uma ação contra o time adversário.`;
+  }
+
+  return `Turno ${turnNumber}: ${teamName} realizou uma jogada.`;
+}
+
+function getGameActionText(game, lastTurn) {
   const status = game?.status;
 
   if (status === 'FINISHED') {
@@ -197,14 +280,30 @@ function getGameActionText(game) {
     return 'Aguardando jogadores para iniciar a partida.';
   }
 
+  const turnText = getTurnText(lastTurn);
+
+  if (turnText) {
+    return turnText;
+  }
+
   const lastAction = getLastAction(game);
 
   if (!lastAction) {
-    if (status === 'PLAYING' || status === 'IN_PROGRESS') {
-      return 'A partida está em andamento. Aguardando a próxima jogada.';
+    const turingPlayer = getTuringPlayer(game);
+    const lovelacePlayer = getLovelacePlayer(game);
+
+    const turingName = getPlayerName(turingPlayer);
+    const lovelaceName = getPlayerName(lovelacePlayer);
+
+    if (
+      (status === 'PLAYING' || status === 'IN_PROGRESS') &&
+      turingName !== 'Não definido' &&
+      lovelaceName !== 'Não definido'
+    ) {
+      return `A partida está em andamento entre ${turingName} e ${lovelaceName}.`;
     }
 
-    return 'Aguardando movimentações da partida.';
+    return 'A partida está em andamento.';
   }
 
   const actionType = getActionType(lastAction);
@@ -214,11 +313,7 @@ function getGameActionText(game) {
   const professorName = getProfessorByTeam(teamId);
 
   if (!actionType) {
-    if (status === 'PLAYING' || status === 'IN_PROGRESS') {
-      return 'A partida está em andamento. Aguardando a próxima jogada.';
-    }
-
-    return 'Aguardando movimentações da partida.';
+    return 'A partida está em andamento.';
   }
 
   if (actionType === 'forfeit' || actionType === 'FORFEIT') {
@@ -248,7 +343,7 @@ function getGameActionText(game) {
     return `${professorName} realizou uma ação contra o time adversário.`;
   }
 
-  return 'A partida está em andamento. Aguardando a próxima jogada.';
+  return 'A partida está em andamento.';
 }
 
 function mergeGameData(apiGame, socketGame) {
@@ -312,6 +407,27 @@ function mergeGameData(apiGame, socketGame) {
   };
 }
 
+function normalizeTurnsResponse(data) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data?.items || data?.turns || data?.data || [];
+}
+
+function sortTurns(turnsList) {
+  return [...turnsList].sort((a, b) => {
+    const turnA = Number(getTurnNumber(a));
+    const turnB = Number(getTurnNumber(b));
+
+    if (Number.isNaN(turnA) || Number.isNaN(turnB)) {
+      return 0;
+    }
+
+    return turnA - turnB;
+  });
+}
+
 export function WatchGamePage() {
   const { gameId } = useParams();
 
@@ -322,6 +438,7 @@ export function WatchGamePage() {
   } = useGameContext();
 
   const [game, setGame] = useState(null);
+  const [turns, setTurns] = useState([]);
   const [spectator, setSpectator] = useState(null);
   const [spectatorToken, setSpectatorToken] = useState(null);
   const [showWinnerPopup, setShowWinnerPopup] = useState(false);
@@ -342,6 +459,26 @@ export function WatchGamePage() {
 
   const currentGame = mergeGameData(game, gameState);
 
+  async function loadGameTurns() {
+    try {
+      const playerToken = getPlayerToken();
+
+      if (!playerToken) {
+        return;
+      }
+
+      const data = await listGameTurns(gameId, playerToken);
+
+      console.log('Turnos da partida:', data);
+
+      const turnsList = normalizeTurnsResponse(data);
+
+      setTurns(sortTurns(turnsList));
+    } catch (err) {
+      console.error('Erro ao carregar turnos da partida:', err);
+    }
+  }
+
   async function loadGameAndRegisterSpectator() {
     setLoading(true);
     setError(null);
@@ -358,6 +495,7 @@ export function WatchGamePage() {
       console.log('Partida carregada:', gameData);
 
       setGame(gameData);
+      await loadGameTurns();
 
       const existingSpectatorToken = getSpectatorToken(gameId);
 
@@ -418,6 +556,7 @@ export function WatchGamePage() {
       console.log('Partida finalizada recarregada:', finishedGameData);
 
       setGame((previousGame) => mergeGameData(previousGame, finishedGameData));
+      await loadGameTurns();
     } catch (err) {
       console.error('Erro ao recarregar partida finalizada:', err);
     }
@@ -430,6 +569,7 @@ export function WatchGamePage() {
     winnerPopupOpenedRef.current = false;
 
     setShowWinnerPopup(false);
+    setTurns([]);
 
     loadGameAndRegisterSpectator();
   }, [gameId]);
@@ -439,6 +579,23 @@ export function WatchGamePage() {
 
     setGame((previousGame) => mergeGameData(previousGame, gameState));
   }, [gameState]);
+
+  useEffect(() => {
+    const isRunning =
+      currentGame?.status === 'PLAYING' || currentGame?.status === 'IN_PROGRESS';
+
+    if (!gameId || !isRunning) {
+      return;
+    }
+
+    loadGameTurns();
+
+    const intervalId = setInterval(() => {
+      loadGameTurns();
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [gameId, currentGame?.status]);
 
   useEffect(() => {
     if (currentGame?.status !== 'FINISHED') {
@@ -463,9 +620,11 @@ export function WatchGamePage() {
   const gameIsRunning =
     currentGame?.status === 'PLAYING' || currentGame?.status === 'IN_PROGRESS';
 
+  const lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
+
   const winnerClass = getWinnerClass(currentGame);
   const winnerPopupText = getWinnerPopupText(currentGame);
-  const gameActionText = getGameActionText(currentGame);
+  const gameActionText = getGameActionText(currentGame, lastTurn);
 
   const turingPlayer = getTuringPlayer(currentGame);
   const lovelacePlayer = getLovelacePlayer(currentGame);
