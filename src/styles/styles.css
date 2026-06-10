@@ -1237,3 +1237,50 @@ summary {
   color: var(--muted);
   font-weight: 800;
 }
+
+.winner-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(32, 16, 8, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.winner-modal {
+  width: min(520px, 100%);
+  padding: 28px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(225, 29, 29, 0.14), transparent 36%),
+    linear-gradient(180deg, #fff8ec, #fff1dd);
+  border: 3px solid var(--border);
+  border-top: 8px solid var(--gold);
+  box-shadow: 0 26px 70px rgba(68, 36, 20, 0.35);
+  text-align: center;
+}
+
+.winner-modal h2 {
+  margin: 18px 0 10px;
+  color: var(--torii-red-dark);
+  font-size: clamp(26px, 4vw, 38px);
+}
+
+.winner-modal p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.winner-modal-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}

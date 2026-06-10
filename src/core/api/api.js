@@ -112,3 +112,10 @@ export function getMockGameState() {
     method: 'POST',
   });
 }
+
+export function listGameTurns(gameId, token) {
+  return request(`/api/v1/games/${gameId}/turns`, {
+    method: 'GET',
+    token,
+  });
+}
