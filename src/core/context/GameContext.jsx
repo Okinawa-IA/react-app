@@ -1,12 +1,22 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { FIXED_PLAYER } from '@core/config/fixedPlayer';
 
 const GameContext = createContext(null);
 
+function getFixedPlayer() {
+  return {
+    ...FIXED_PLAYER,
+    player_access_token: import.meta.env.VITE_FIXED_PLAYER_ACCESS_TOKEN,
+  };
+}
+
 export function GameProvider({ children }) {
   const [player, setPlayer] = useState(() => {
-    const storedPlayer = localStorage.getItem('player');
+    const fixedPlayer = getFixedPlayer();
 
-    return storedPlayer ? JSON.parse(storedPlayer) : null;
+    localStorage.setItem('player', JSON.stringify(fixedPlayer));
+
+    return fixedPlayer;
   });
 
   const [spectatorTokens, setSpectatorTokens] = useState(() => {
@@ -16,21 +26,27 @@ export function GameProvider({ children }) {
   });
 
   useEffect(() => {
-    if (player) {
-      localStorage.setItem('player', JSON.stringify(player));
-    }
-  }, [player]);
+    const fixedPlayer = getFixedPlayer();
+
+    localStorage.setItem('player', JSON.stringify(fixedPlayer));
+    setPlayer(fixedPlayer);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('spectatorTokens', JSON.stringify(spectatorTokens));
   }, [spectatorTokens]);
 
-  function savePlayer(playerData) {
-    setPlayer(playerData);
+  function savePlayer() {
+    const fixedPlayer = getFixedPlayer();
+
+    localStorage.setItem('player', JSON.stringify(fixedPlayer));
+    setPlayer(fixedPlayer);
+
+    return fixedPlayer;
   }
 
   function getPlayerToken() {
-   return player?.player_access_token;
+    return getFixedPlayer().player_access_token;
   }
 
   function getSpectatorToken(gameId) {
