@@ -5,6 +5,7 @@ import {
   joinGame,
   listGames,
   startGame,
+  getGameById,
 } from '@core/api/api';
 import { useGameContext } from '@core/context/GameContext';
 
@@ -24,12 +25,17 @@ function canStartGame(game) {
   return game?.status === 'WAITING_PLAYERS' || game?.status === 'PAUSED';
 }
 
+function hasBothPlayers(game) {
+  return Boolean(game?.turing_player) && Boolean(game?.lovelace_player);
+}
+
 export function PlayPage() {
   const navigate = useNavigate();
   const { player, getPlayerToken } = useGameContext();
 
   const [games, setGames] = useState([]);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [autoStartingGameId, setAutoStartingGameId] = useState(null);
 
   const [loadingGames, setLoadingGames] = useState(false);
   const [creatingGame, setCreatingGame] = useState(false);
@@ -90,6 +96,7 @@ export function PlayPage() {
       console.log('Partida criada:', data);
 
       setSelectedGame(data);
+      setAutoStartingGameId(data.id);
 
       await loadGames();
     } catch (err) {
@@ -125,6 +132,8 @@ export function PlayPage() {
       setSelectedGame(data);
 
       await loadGames();
+
+      navigate(`/watch/${data.id || gameId}`);
     } catch (err) {
       console.error(err);
       setError('Erro ao entrar na partida.');
@@ -155,6 +164,7 @@ export function PlayPage() {
       console.log('Partida iniciada:', data);
 
       setSelectedGame(data);
+      setAutoStartingGameId(null);
 
       navigate(`/watch/${data.id || gameId}`);
     } catch (err) {
@@ -170,6 +180,73 @@ export function PlayPage() {
       loadGames();
     }
   }, [player]);
+
+  useEffect(() => {
+    if (!autoStartingGameId || !player) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const token = getPlayerToken();
+
+        if (!token) return;
+
+        const updatedGame = await getGameById(autoStartingGameId, token);
+
+        console.log('Monitorando partida para início automático:', updatedGame);
+
+        setSelectedGame(updatedGame);
+
+        const isHost = updatedGame.turing_player?.id === player.id;
+
+        const gameAlreadyStarted =
+          updatedGame.status === 'PLAYING' || updatedGame.status === 'IN_PROGRESS';
+
+        if (gameAlreadyStarted) {
+          clearInterval(intervalId);
+
+          setAutoStartingGameId(null);
+          setSelectedGame(updatedGame);
+
+          navigate(`/watch/${updatedGame.id}`);
+
+          return;
+        }
+
+        const canAutoStart =
+          isHost &&
+          hasBothPlayers(updatedGame) &&
+          updatedGame.status === 'WAITING_PLAYERS';
+
+        if (!canAutoStart) {
+          return;
+        }
+
+        clearInterval(intervalId);
+        setAutoStartingGameId(null);
+        setStartingGame(true);
+
+        const startedGame = await startGame(
+          updatedGame.id,
+          {
+            reason: 'Iniciado automaticamente pelo host',
+          },
+          token
+        );
+
+        console.log('Partida iniciada automaticamente:', startedGame);
+
+        setSelectedGame(startedGame);
+
+        navigate(`/watch/${startedGame.id || updatedGame.id}`);
+      } catch (err) {
+        console.error('Erro ao monitorar/iniciar partida automaticamente:', err);
+      } finally {
+        setStartingGame(false);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [autoStartingGameId, player, getPlayerToken, navigate]);
 
   const waitingGames = games.filter((game) => game.status === 'WAITING_PLAYERS');
 
@@ -234,7 +311,9 @@ export function PlayPage() {
             <h2>Criar nova partida</h2>
 
             <p>
-              Crie uma partida contra bot aleatório usando seu jogador atual.
+              Crie uma partida e aguarde outro jogador entrar como Lovelace.
+              Quando os dois jogadores estiverem prontos, a partida será
+              iniciada automaticamente.
             </p>
           </div>
 
@@ -257,10 +336,32 @@ export function PlayPage() {
               <strong>Status:</strong> {getStatusLabel(selectedGame.status)}
             </p>
 
+            <p>
+              <strong>Turing:</strong>{' '}
+              {selectedGame.turing_player?.ai_player_name || 'Não definido'}
+            </p>
+
+            <p>
+              <strong>Lovelace:</strong>{' '}
+              {selectedGame.lovelace_player?.ai_player_name || 'Não definido'}
+            </p>
+
+            {autoStartingGameId === selectedGame.id &&
+             selectedGame.status === 'WAITING_PLAYERS' && (
+              <p className="auto-start-message">
+                Aguardando segundo jogador entrar. Assim que Lovelace estiver
+                definido, a partida será iniciada automaticamente.
+              </p>
+            )}
+
             <div className="hero-actions">
               <button
                 onClick={() => handleStartGame(selectedGame.id)}
-                disabled={startingGame || !canStartGame(selectedGame)}
+                disabled={
+                  startingGame ||
+                  !canStartGame(selectedGame) ||
+                  !hasBothPlayers(selectedGame)
+                }
               >
                 {selectedGame.status === 'PLAYING' ||
                 selectedGame.status === 'IN_PROGRESS'
@@ -269,7 +370,9 @@ export function PlayPage() {
                     ? 'Partida finalizada'
                     : startingGame
                       ? 'Iniciando...'
-                      : 'Iniciar partida'}
+                      : !hasBothPlayers(selectedGame)
+                        ? 'Aguardando segundo jogador'
+                        : 'Iniciar partida'}
               </button>
 
               <Link

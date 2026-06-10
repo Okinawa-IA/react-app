@@ -9,7 +9,7 @@ function resolveWebSocketURL(url) {
     return cleanUrl;
   }
 
-  return cleanUrl.replace(/^http/, 'ws').replace(/^https/, 'wss');
+  return cleanUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 }
 
 function createWebSocketUrl(gameId, spectatorToken) {
@@ -18,6 +18,24 @@ function createWebSocketUrl(gameId, spectatorToken) {
   url.searchParams.set('token', spectatorToken);
 
   return resolveWebSocketURL(url.toString());
+}
+
+function normalizeSocketMessage(message) {
+  console.log('Mensagem bruta do WebSocket:', message);
+
+  const normalized =
+    message.game ||
+    message.data?.game ||
+    message.data?.state ||
+    message.data?.payload ||
+    message.state ||
+    message.payload ||
+    message.data ||
+    message;
+
+  console.log('Estado normalizado do WebSocket:', normalized);
+
+  return normalized;
 }
 
 export function useGameSocket(gameId, spectatorToken) {
@@ -50,14 +68,27 @@ export function useGameSocket(gameId, spectatorToken) {
       };
 
       socket.onmessage = (event) => {
-        console.log('Mensagem recebida do WebSocket:', event.data);
-
         try {
-          const data = JSON.parse(event.data);
-          setGameState(data);
+          const message = JSON.parse(event.data);
+          const normalizedGameState = normalizeSocketMessage(message);
+
+          setGameState((previousState) => ({
+            ...previousState,
+            ...normalizedGameState,
+            turing_player:
+              normalizedGameState.turing_player ||
+              normalizedGameState.turingPlayer ||
+              previousState?.turing_player ||
+              previousState?.turingPlayer,
+            lovelace_player:
+              normalizedGameState.lovelace_player ||
+              normalizedGameState.lovelacePlayer ||
+              previousState?.lovelace_player ||
+              previousState?.lovelacePlayer,
+          }));
         } catch (err) {
-          console.error('Erro ao interpretar mensagem do WebSocket:', err);
-          setSocketError('Erro ao interpretar mensagem do servidor');
+          console.error('Erro ao processar mensagem do WebSocket:', err);
+          setSocketError('Erro ao processar mensagem em tempo real');
         }
       };
 
