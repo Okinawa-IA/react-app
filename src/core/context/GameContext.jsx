@@ -1,11 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { FIXED_PLAYER } from '@core/config/fixedPlayer';
+import { getFixedPlayer } from '@core/config/fixedPlayer';
 
 const GameContext = createContext(null);
-
-function getFixedPlayer() {
-  return FIXED_PLAYER;
-}
 
 export function GameProvider({ children }) {
   const [player, setPlayer] = useState(() => {
