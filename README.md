@@ -1,240 +1,388 @@
-# Projeto Integrador 5 - Frontend
+# Okinawa IA Frontend - PI5
 
-Este repositório contém a aplicação frontend desenvolvida para o Projeto Integrador 5, utilizando **React** com **Vite**.
+Frontend em React com Vite para a interface web do projeto PI5.
 
-A aplicação tem como objetivo servir como interface para visualizar os jogos dos jogadores inteligentes desenvolvidos no projeto.
+Esta aplicação consome a API principal do torneio e permite que o grupo Okinawa IA crie partidas, entre em jogos existentes, acompanhe partidas em andamento e visualize o tabuleiro em tempo real.
 
----
+O sistema utiliza um player configurável por variáveis de ambiente, permitindo trocar o ID e o token do jogador sem alterar o código-fonte.
+
+## Objetivo
+
+O objetivo deste frontend é fornecer uma interface visual para interação com a API principal do professor, permitindo o gerenciamento e acompanhamento das partidas do time Okinawa IA.
+
+Fluxo esperado:
+
+```txt
+Usuário acessa o Frontend Okinawa IA
+        ↓
+Aplicação carrega o player configurado
+        ↓
+Usuário cria ou entra em uma partida
+        ↓
+Frontend envia requisições para a API principal
+        ↓
+API principal aciona o endpoint do bot
+        ↓
+Frontend acompanha o estado da partida e exibe o tabuleiro
+```
 
 ## Tecnologias utilizadas
 
-- React
-- Vite
-- JavaScript
-- React Router
-- npm
-- Git
+* React
+* Vite
+* JavaScript
+* React Router DOM
+* CSS
+* Vercel
+* Railway
 
----
+## Funcionalidades
 
-## Link para API
+* Player fixo configurável por variáveis de ambiente
+* Listagem de jogadores
+* Criação de partidas
+* Entrada em partidas existentes
+* Inicialização automática de partidas
+* Listagem de partidas disponíveis
+* Registro como espectador
+* Visualização de partidas em andamento
+* Atualização do estado da partida
+* Exibição visual do tabuleiro
+* Exibição dos professores/personagens no tabuleiro
+* Exibição do vencedor ao final da partida
+* Integração com a API principal do torneio
+* Integração com o endpoint do bot Okinawa IA
 
-```bash
-https://pi5-api-production.up.railway.app/docs#/
+## Estrutura do projeto
 
+```txt
+react-app/
+├── public/
+│
+├── src/
+│   ├── assets/
+│   │   └── professors/
+│   │       ├── bia.png
+│   │       ├── claro.png
+│   │       ├── karin.png
+│   │       └── rey.png
+│   │
+│   ├── core/
+│   │   ├── api/
+│   │   │   └── api.js
+│   │   │
+│   │   ├── config/
+│   │   │   └── fixedPlayer.js
+│   │   │
+│   │   └── context/
+│   │       └── GameContext.jsx
+│   │
+│   ├── feature/
+│   │   └── game/
+│   │       └── components/
+│   │           └── GameBoard.jsx
+│   │
+│   ├── routes/
+│   │   ├── home-page.jsx
+│   │   ├── players-page.jsx
+│   │   ├── play-page.jsx
+│   │   ├── watch-page.jsx
+│   │   └── watch-game-page.jsx
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+│
+├── .gitignore
+├── README.md
+├── package.json
+├── package-lock.json
+├── vite.config.js
+└── vercel.json
 ```
 
----
+## Principais arquivos
 
-## Comandos importantes usados no projeto
+### `src/core/api/api.js`
 
-Durante a criação da aplicação frontend com React e Vite, alguns comandos foram utilizados para configurar, instalar dependências, executar e versionar o projeto.
+Arquivo responsável pela comunicação com a API principal do torneio.
 
----
+Centraliza as funções de requisição utilizadas pelo frontend, como:
 
-## Inicializar o repositório Git
+* Listar jogadores
+* Criar partidas
+* Entrar em partidas
+* Iniciar partidas
+* Buscar partida por ID
+* Listar partidas
+* Registrar espectador
+* Buscar histórico de turnos da partida
 
-```bash
-git init
+### `src/core/config/fixedPlayer.js`
 
-```
+Arquivo responsável por centralizar os dados do player utilizado pela aplicação.
 
-Cria um repositório Git local dentro da pasta do projeto.
+Os dados podem vir das variáveis de ambiente ou, caso elas não existam, dos valores padrão definidos no próprio arquivo.
 
-Esse comando permite versionar o código, fazer commits e depois enviar o projeto para o GitHub.
+Isso permite que o ID e o token do player sejam alterados sem necessidade de modificar o restante do sistema.
 
-----------
+### `src/core/context/GameContext.jsx`
 
-## Inicializar o projeto Node/npm
+Contexto global da aplicação.
 
-```bash
-npm init -y
+Responsável por armazenar e disponibilizar informações importantes, como:
 
-```
+* Player atual
+* Token do player
+* Tokens de espectador
+* Função para recuperar o token do player
+* Função para salvar tokens de espectador
 
-Cria o arquivo `package.json`, que guarda as informações principais do projeto, como nome, versão, scripts e dependências.
+### `src/feature/game/components/GameBoard.jsx`
 
-O parâmetro `-y` responde automaticamente às perguntas iniciais do npm, criando uma configuração padrão.
+Componente responsável por renderizar visualmente o tabuleiro da partida.
 
-----------
+Exibe os professores/personagens no mapa e atualiza a visualização conforme o estado retornado pela API.
 
-## Instalar o Vite
+### `src/routes`
 
-```bash
-npm install --save-dev vite
+Pasta responsável pelas páginas principais da aplicação.
 
-```
+| Arquivo               | Responsabilidade                                 |
+| --------------------- | ------------------------------------------------ |
+| `home-page.jsx`       | Página inicial da aplicação                      |
+| `players-page.jsx`    | Página de jogadores                              |
+| `play-page.jsx`       | Página para criar ou entrar em partidas          |
+| `watch-page.jsx`      | Página de listagem/acompanhamento de partidas    |
+| `watch-game-page.jsx` | Página de visualização de uma partida específica |
 
-Instala o Vite como dependência de desenvolvimento.
+## Rotas da aplicação
 
-O Vite é a ferramenta usada para rodar o servidor local, fazer o build da aplicação e facilitar o desenvolvimento frontend.
+| Rota             | Descrição                                        |
+| ---------------- | ------------------------------------------------ |
+| `/`              | Página inicial                                   |
+| `/players`       | Página de jogadores                              |
+| `/play`          | Página para criar ou entrar em partidas          |
+| `/watch`         | Página para acompanhar partidas                  |
+| `/watch/:gameId` | Página de visualização de uma partida específica |
 
-----------
+## Instalação
 
-## Instalar tipos do Node
-
-```bash
-npm install --save-dev @types/node
-
-```
-
-Instala definições de tipos do Node.js.
-
-Mesmo usando JavaScript, esse pacote ajuda o editor, como o VS Code, a entender melhor recursos do Node e oferecer autocomplete.
-
-----------
-
-## Instalar React, React DOM e React Router
-
-```bash
-npm install react react-dom react-router
-
-```
-
-Instala as principais dependências da aplicação React.
-
--   `react`: biblioteca principal para criar componentes e interfaces.
-    
--   `react-dom`: permite renderizar os componentes React no navegador.
-    
--   `react-router`: permite criar rotas e navegação entre páginas dentro da aplicação.
-    
-
-----------
-
-## Instalar tipos do React
+1. Clone o repositório:
 
 ```bash
-npm install --save-dev @types/react @types/react-dom
-
+git clone <url-do-repositorio>
 ```
 
-Instala definições de tipos para React e React DOM.
-
-Esses pacotes ajudam o editor a reconhecer melhor os componentes, propriedades e funções do React.
-
-----------
-
-## Instalar o plugin React para o Vite
+2. Acesse a pasta do projeto:
 
 ```bash
-npm install -D @vitejs/plugin-react
-
+cd react-app
 ```
 
-Instala o plugin que permite ao Vite trabalhar corretamente com React e JSX.
+3. Instale as dependências:
 
-O `-D` é um atalho para `--save-dev`, ou seja, instala como dependência de desenvolvimento.
+```bash
+npm install
+```
 
-----------
+## Configuração do ambiente
 
-## Rodar o projeto em modo desenvolvimento
+Crie um arquivo `.env` na raiz do projeto com as variáveis necessárias.
+
+Exemplo:
+
+```env
+VITE_API_BASE_URL=https://pi5-api-production.up.railway.app
+
+VITE_FIXED_PLAYER_ID=216
+VITE_FIXED_PLAYER_GROUP_NAME=Okinawa
+VITE_FIXED_PLAYER_NAME=okinawa_bot
+VITE_FIXED_PLAYER_AVATAR=https://i0.wp.com/blog.janm.org/wp-content/uploads/2015/07/shisa-by-troy-williams-via-flickr.jpg?ssl=1
+VITE_FIXED_PLAYER_DESCRIPTION=Bot de testes
+VITE_FIXED_PLAYER_MOVE_ENDPOINT=https://back-end-production-f7ba.up.railway.app/move
+VITE_FIXED_PLAYER_ACCESS_TOKEN=coloque_o_token_do_player_aqui
+```
+
+## Variáveis de ambiente
+
+| Variável                          | Descrição                                  |
+| --------------------------------- | ------------------------------------------ |
+| `VITE_API_BASE_URL`               | URL base da API principal do torneio       |
+| `VITE_FIXED_PLAYER_ID`            | ID do player utilizado pela aplicação      |
+| `VITE_FIXED_PLAYER_GROUP_NAME`    | Nome do grupo                              |
+| `VITE_FIXED_PLAYER_NAME`          | Nome do bot/player                         |
+| `VITE_FIXED_PLAYER_AVATAR`        | URL do avatar do player                    |
+| `VITE_FIXED_PLAYER_DESCRIPTION`   | Descrição do player                        |
+| `VITE_FIXED_PLAYER_MOVE_ENDPOINT` | Endpoint público do bot Okinawa IA         |
+| `VITE_FIXED_PLAYER_ACCESS_TOKEN`  | Token de acesso do player na API principal |
+
+## Como rodar localmente
+
+Na raiz do projeto, execute:
 
 ```bash
 npm run dev
-
 ```
 
-Inicia o servidor local de desenvolvimento do Vite.
+A aplicação ficará disponível em:
 
-Esse comando permite abrir a aplicação no navegador e ver as alterações quase automaticamente sempre que um arquivo é salvo.
+```txt
+http://localhost:5173
+```
 
-----------
+## Como gerar build de produção
 
-## Gerar a versão de produção
+Execute:
 
 ```bash
 npm run build
-
 ```
 
-Gera a versão final da aplicação para produção.
+O Vite irá gerar os arquivos finais na pasta:
 
-O Vite cria uma pasta `dist/` com os arquivos otimizados, minificados e prontos para publicação.
+```txt
+dist/
+```
 
-----------
+## Como testar a build localmente
 
-## Visualizar a versão de produção localmente
+Após gerar a build, execute:
 
 ```bash
 npm run preview
-
 ```
 
-Executa uma prévia local da versão gerada pelo `npm run build`.
+## Scripts disponíveis
 
-Serve para testar como a aplicação vai se comportar depois de preparada para produção.
+| Comando           | Descrição                                         |
+| ----------------- | ------------------------------------------------- |
+| `npm run dev`     | Inicia a aplicação em ambiente de desenvolvimento |
+| `npm run build`   | Gera a build de produção                          |
+| `npm run preview` | Executa localmente a build gerada                 |
 
-----------
+## Integração com a API principal
 
-# Comandos Git para entrega
+O frontend se comunica com a API principal do torneio por meio da variável:
 
-## Conectar o repositório local ao GitHub
-
-```bash
-git remote add origin https://github.com/Okinawa-IA/Entrega-01.git
-
+```env
+VITE_API_BASE_URL=https://pi5-api-production.up.railway.app
 ```
 
-Conecta o projeto local a um repositório remoto no GitHub.
+Essa API é responsável por gerenciar:
 
-----------
+* Players
+* Partidas
+* Entrada em partidas
+* Início dos jogos
+* Estado atual do jogo
+* Histórico de turnos
+* Espectadores
 
-## Enviar o projeto para o GitHub
+## Integração com o bot Okinawa IA
 
-```bash
-git push -u origin main
+O player configurado no frontend utiliza o seguinte endpoint de movimento:
 
+```txt
+https://back-end-production-f7ba.up.railway.app/move
 ```
 
-Envia os commits do projeto local para o repositório remoto no GitHub.
+Esse endpoint pertence ao backend Okinawa Bot API e é responsável por calcular a próxima jogada do agente.
 
-O `-u` configura a branch local para acompanhar a branch remota, facilitando os próximos `git push`.
+Campo utilizado no cadastro do player:
 
-Caso a branch principal do projeto seja `master`, use:
-
-```bash
-git push -u origin master
-
+```json
+{
+  "ai_player_move_endpoint": "https://back-end-production-f7ba.up.railway.app/move"
+}
 ```
 
-----------
+## Player fixo
 
-# Arquivo `.gitignore`
+A aplicação utiliza um player fixo para facilitar a execução dos testes e evitar a necessidade de cadastro manual a cada uso.
 
-No arquivo `.gitignore`, foram adicionados:
+Os dados do player são carregados a partir das variáveis de ambiente. Caso essas variáveis não estejam configuradas, o arquivo `fixedPlayer.js` utiliza valores padrão.
 
-```gitignore
-dist/
-node_modules/
-.env
+Essa estratégia permite que, caso o player seja recriado, seja necessário alterar apenas o ID e o token nas variáveis de ambiente.
 
+Exemplo:
+
+```env
+VITE_FIXED_PLAYER_ID=216
+VITE_FIXED_PLAYER_ACCESS_TOKEN=novo_token_do_player
 ```
 
-Esses arquivos e pastas não devem ser enviados ao GitHub.
+Após alterar essas variáveis em produção, é necessário realizar um novo deploy.
 
--   `dist/`: pasta gerada automaticamente no build de produção.
-    
--   `node_modules/`: pasta com as dependências instaladas pelo npm.
-    
--   `.env`: arquivo usado para variáveis de ambiente, podendo conter dados sensíveis.
-    
+## Deploy na Vercel
 
-----------
+O frontend está publicado na Vercel.
 
-# Scripts de Execução
+Para o funcionamento correto em produção, as variáveis de ambiente devem ser cadastradas em:
 
-## `npm run dev`
+```txt
+Vercel → Project Settings → Environment Variables
+```
 
-Executa o projeto em ambiente de desenvolvimento.
+As variáveis devem ser configuradas para os ambientes:
 
-## `npm run build`
+```txt
+Production
+Preview
+Development
+```
 
-Gera os arquivos finais da aplicação para produção.
+Após adicionar ou alterar variáveis de ambiente, é necessário realizar um novo deploy.
 
-## `npm run preview`
+## Reescrita de rotas na Vercel
 
-Permite visualizar localmente a versão de produção gerada pelo build.
+Como a aplicação utiliza React Router, o arquivo `vercel.json` é utilizado para redirecionar as rotas para o `index.html`.
 
-----------
+Exemplo:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+Isso evita erro ao acessar diretamente rotas como:
+
+```txt
+/watch/1
+/play
+/players
+```
+
+## Fluxo de funcionamento
+
+```txt
+Frontend Okinawa IA
+        ↓
+Carrega player configurado
+        ↓
+Usuário cria ou entra em uma partida
+        ↓
+Frontend envia requisições para a API principal
+        ↓
+API principal gerencia o estado do jogo
+        ↓
+API principal chama o endpoint do bot
+        ↓
+Bot retorna movimento e mentoria
+        ↓
+Frontend atualiza e exibe o tabuleiro
+```
+## Deploy na Vercel
+
+O frontend está publicado na Vercel e pode ser acessado pelo link:
+
+```txt
+https://okinawa-ia.vercel.app/
+```
 
